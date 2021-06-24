@@ -1,0 +1,63 @@
+newmtl Playground:blinn1SG
+illum 4
+Kd 1.00 0.00 0.17
+Ka 0.00 0.09 0.33
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 0.06
+newmtl Playground:blinn2SG
+illum 4
+Kd 0.06 0.05 0.66
+Ka 0.11 0.10 0.42
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 0.22 0.83
+Ns 0.06
+newmtl Playground:blinn3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd Temp3.bmp
+Ni 1.00
+Ks 0.31 0.31 0.56
+Ns 0.06
+newmtl Playground:blinn4SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd Temp2.bmp
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 0.06
+newmtl Playground:blinn5SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd Temp1.bmp
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 0.06
+newmtl Playground:blinn6SG
+illum 4
+Kd 0.00 0.48 0.16
+Ka 0.01 0.09 0.16
+Tf 0.52 0.52 0.52
+Ni 1.00
+newmtl Playground:lambert2SG
+illum 4
+Kd 0.47 0.47 0.47
+Ka 0.01 0.07 0.12
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 0.26 0.33 0.71
+Ns 0.06
+newmtl Playground:lambert3SG
+illum 4
+Kd 0.89 0.53 0.01
+Ka 0.00 0.05 0.09
+Tf 0.70 0.70 0.70
+Ni 1.00

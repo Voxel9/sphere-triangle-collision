@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include "texture.h"
 
 class Skybox {
 public:
@@ -10,5 +11,5 @@ public:
     void Draw();
 private:
     GLuint cubetex_id;
-    unsigned char cubetex_data[6][512][512][3];
+    Texture *cubetex_data[6];
 };

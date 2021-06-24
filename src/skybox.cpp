@@ -40,22 +40,10 @@ Skybox::Skybox() {
     
     // Load the cube bitmaps from files
     for(int i = 0; i < 6; i++) {
-        FILE *cubetex_file = fopen(cubemap_filenames[i], "rb");
+        cubetex_data[i] = new Texture(cubemap_filenames[i]);
         
-        if(!cubetex_file) {
-            printf("Could not open cubemap BMP file:\n%s\n", cubemap_filenames[i]);
-            continue; // Just skip this face for now
-        }
-        
-        // Read line-by-line, from bottom to top, as BMPs are stored vertically flipped
-        for(int yline = 0; yline < 512; yline++) {
-            fseek(cubetex_file, -(yline * 512 * 3) - sizeof(cubetex_data[0][0]), SEEK_END);
-            fread(cubetex_data[i][yline], sizeof(cubetex_data[0][0]), 1, cubetex_file);
-        }
-        
-        fclose(cubetex_file);
-        
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, 512, 512, 0, GL_BGR, GL_UNSIGNED_BYTE, cubetex_data[i]);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, cubetex_data[i]->width,
+            cubetex_data[i]->height, 0, GL_BGR, GL_UNSIGNED_BYTE, cubetex_data[i]->data);
     }
     
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -79,7 +67,6 @@ void Skybox::Draw() {
     glEnable(GL_TEXTURE_CUBE_MAP);
     glDisable(GL_LIGHTING);
     
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex_id);
     
     for(int i = 0; i < 6; i++) {
@@ -103,6 +90,8 @@ void Skybox::Draw() {
         glEnd();
     }
     
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    
     glEnable(GL_LIGHTING);
     glDisable(GL_TEXTURE_CUBE_MAP);
     
@@ -116,4 +105,7 @@ void Skybox::Draw() {
 //----------------------------------------------------------------
 Skybox::~Skybox() {
     glDeleteTextures(1, &cubetex_id);
+    
+    for(int i = 0; i < 6; i++)
+        delete cubetex_data[i];
 }

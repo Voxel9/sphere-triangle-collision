@@ -31,17 +31,17 @@ mat4 camera_orbit_model, player_model;
 GLUquadric* sphereQuadratic;
 
 // Light properties
+GLfloat light_ambient[] = {1.0, 1.0, 1.0, 1.0};
 GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
 GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
 
 // Global material properties
-GLfloat mat_ambient[] = {0.0, 0.2, 0.4, 1.0};
-GLfloat mat_specular[] = {1.0, 1.0, 1.0, 1.0};
-GLfloat mat_shininess[] = {64.0};
+GLfloat mat_shininess[] = {8.0};
 
 // Object-specific material properties
 GLfloat mat_player_diffuse[] = {1.0, 1.0, 0.0, 1.0};
-GLfloat mat_terrain_diffuse[] = {0.0, 0.5, 1.0, 1.0};
+GLfloat mat_player_ambient[] = {0.0, 0.1, 0.2, 1.0};
+GLfloat mat_player_specular[] = {1.0, 1.0, 1.0, 1.0};
 
 // For mouse movement
 vec2 mouse_pos(0, 0);
@@ -53,21 +53,23 @@ vec2 mouse_delta_pos(0, 0);
 // Desc: Perform global setup of the program
 //------------------------------------------------------------
 static void demo_init() {
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     
-    glLightfv(GL_LIGHT0, GL_AMBIENT, mat_ambient);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     
     glEnable(GL_MULTISAMPLE);
+    
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHTING);
+    
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
     
     // Setup the projection matrix
     glMatrixMode(GL_PROJECTION);
@@ -78,7 +80,7 @@ static void demo_init() {
     
     // Setup our scene objects
     SceneSkybox = new Skybox();
-    TerrainMesh = new StaticMesh("data/Playground.obj");
+    TerrainMesh = new StaticMesh("data/Playground/", "Playground.obj");
     
     // Initialize transforms
     player_pos = vec3(0, 5, 5);
@@ -209,24 +211,28 @@ int main(int argc, char **argv) {
         // TODO: Maybe we could move this collision detection and response somewhere else?
         CollisionPacket collisionPacket;
         
-        for(unsigned int i = 0; i < TerrainMesh->num_faces; i++) {
-            // Call the collision test routine for each triangle
-            bool result = IsIntersectingSphereTriangle(
-                collisionPacket,
-                TerrainMesh->vertices[TerrainMesh->vertex_indices[i*3]],
-                TerrainMesh->vertices[TerrainMesh->vertex_indices[i*3+1]],
-                TerrainMesh->vertices[TerrainMesh->vertex_indices[i*3+2]],
-                player_pos,
-                player_collide_radius
-                );
-            
-            if(result) {
-                // If colliding with floor or ramp, kill gravity
-                if(collisionPacket.normal.y > 0.5f)
-                    player_gravity = 0;
-                
-                // Push collision sphere away from the intersected triangle(s)
-                player_pos += collisionPacket.normal * (collisionPacket.distance + 1);
+        for(unsigned int i = 0; i < TerrainMesh->groups.size(); i++) {
+            for(unsigned int j = 0; j < TerrainMesh->groups[i].submeshes.size(); j++) {
+                for(unsigned int k = 0; k < TerrainMesh->groups[i].submeshes[j].num_faces; k++) {
+                    // Call the collision test routine for each triangle
+                    bool result = IsIntersectingSphereTriangle(
+                        collisionPacket,
+                        TerrainMesh->vertices[TerrainMesh->groups[i].submeshes[j].vertex_indices[k*3]],
+                        TerrainMesh->vertices[TerrainMesh->groups[i].submeshes[j].vertex_indices[k*3+1]],
+                        TerrainMesh->vertices[TerrainMesh->groups[i].submeshes[j].vertex_indices[k*3+2]],
+                        player_pos,
+                        player_collide_radius
+                        );
+                    
+                    if(result) {
+                        // If colliding with floor or ramp, kill gravity
+                        if(collisionPacket.normal.y > 0.5f)
+                            player_gravity = 0;
+                        
+                        // Push collision sphere away from the intersected triangle(s)
+                        player_pos += collisionPacket.normal * (collisionPacket.distance + 1);
+                    }
+                }
             }
         }
         
@@ -268,13 +274,13 @@ int main(int argc, char **argv) {
         glLoadMatrixf(&player_composite[0][0]);
         
         glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_player_diffuse);
+        glMaterialfv(GL_FRONT, GL_AMBIENT, mat_player_ambient);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_player_specular);
         
         gluSphere(sphereQuadratic, player_collide_radius, 20, 20);
         
         // Draw the static terrain mesh (at the world origin)
         glLoadMatrixf(&view[0][0]);
-        
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_terrain_diffuse);
         
         TerrainMesh->Draw();
         
@@ -282,6 +288,9 @@ int main(int argc, char **argv) {
         fflush(stdout);
         glfwSwapBuffers(window);
     }
+    
+    delete TerrainMesh;
+    delete SceneSkybox;
     
     // Cleanup GLFW
     glfwDestroyWindow(window);
