@@ -16,10 +16,10 @@ struct bitmap_info_header {
     char bpp[2];
     char compression_method[4];
     char img_size[4];
-    char horizontal_res[4]; 
-    char vertical_res[4]; 
+    char horizontal_res[4];
+    char vertical_res[4];
     char num_colors[4];
-    char important_colors[4]; 
+    char important_colors[4];
 };
 
 Texture::Texture(const char *filepath) {
